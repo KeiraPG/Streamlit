@@ -24,3 +24,30 @@ st.write("### (3) Line chart of sales for the selected items")
 def filter_data(category, sub_categories):
     filtered_df = df[(df['Category'] == category) & (df['Sub_Category'].isin(sub_categories))]
     return filtered_df
+
+filtered_df = filter_data(category, sub_categories)
+st.dataframe(filtered_df)  
+
+# Here the Grouper is using our newly set index to group by Month ('M')
+sales_by_month2 = filtered_df.filter(items=['Sales']).groupby(pd.Grouper(freq='M')).sum()
+# st.dataframe(sales_by_month2)
+# Here the grouped months are the index and automatically used for the x axis
+st.line_chart(sales_by_month2, y="Sales")
+
+st.write("### (4) Metrics: total sales, total profit, and overall profit margin")
+if not filtered_df.empty:
+    total_sales = filtered_df['Sales'].sum()
+    total_profit = filtered_df['Profit'].sum()
+    overall_profit_margin = (total_profit / total_sales) * 100
+
+    st.metric(label="Total Sales", value=f"${total_sales:.2f}")
+    st.metric(label="Total Profit", value=f"${total_profit:.2f}")
+    st.metric(label="Overall Profit Margin (%)", value=f"{overall_profit_margin:.2f}%")
+
+
+
+st.write("### (5) Overall profit margin metric to show the difference between the overall average profit margin (all products across all categories)")
+if not filtered_df.empty:
+    overall_avg_profit_margin = (df['Profit'].sum() / df['Sales'].sum()) * 100
+    delta_margin = overall_profit_margin - overall_avg_profit_margin
+    st.metric(label="Overall Profit Margin vs Average", value=f"{delta_margin:.2f}%", delta=delta_margin)
